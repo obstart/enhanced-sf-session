@@ -2,16 +2,18 @@
 
 namespace Obstart\EnhancedSymfonySession;
 use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
-use Symfony\Component\HttpFoundation\Session\Attributes\NamespacedAttributeBag;
+use Symfony\Component\HttpFoundation\Session\Attribute\NamespacedAttributeBag;
 
 class Session extends SymfonySession{
 
 	protected $namespace = '';
+	protected $attributeName;
 
     public function __construct(SessionStorageInterface $storage = null, FlashBagInterface $flashes = null)
     {
     	$attributeBag = new NamespacedAttributeBag();
     	parent::__construct($storage, $attributeBag, $flashes);
+    	$this->attributeName = $attributeBag->getName();
     }
 
 	function setNamespace($namespace){
