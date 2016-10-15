@@ -2,10 +2,19 @@
 
 namespace Obstart\EnhancedSymfonySession;
 use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
+use Symfony\Component\HttpFoundation\Session\Attribute\NamespacedAttributeBag;
 
 class Session extends SymfonySession{
 
 	protected $namespace = '';
+	protected $attributeName;
+
+    public function __construct(SessionStorageInterface $storage = null, FlashBagInterface $flashes = null)
+    {
+    	$attributeBag = new NamespacedAttributeBag();
+    	parent::__construct($storage, $attributeBag, $flashes);
+    	$this->attributeName = $attributeBag->getName();
+    }
 
 	function setNamespace($namespace){
 		$this->namespace = $namespace;
@@ -15,6 +24,88 @@ class Session extends SymfonySession{
 	function getNamespace(){
 		return $this->namespace;
 	}
+
+	   /**
+     * {@inheritdoc}
+     */
+    public function has($name)
+    {
+    	if($this->namespace){
+    		$name = $this->namespace."/".$name;
+    	}
+        return $this->storage->getBag($this->attributeName)->has($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function get($name, $default = null)
+    {
+    	if($this->namespace){
+    		$name = $this->namespace."/".$name;
+    	}
+
+        return $this->storage->getBag($this->attributeName)->get($name, $default);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function set($name, $value)
+    {
+    	if($this->namespace){
+    		$name = $this->namespace."/".$name;
+    	}
+        $this->storage->getBag($this->attributeName)->set($name, $value);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function all()
+    {
+    	if($this->namespace){
+    		return $this->storage->getBag($this->attributeName)->get($this->namespace);
+    	}
+        return $this->storage->getBag($this->attributeName)->all();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function replace(array $attributes)
+    {
+    	if($this->namespace){
+	        $this->storage->getBag($this->attributeName)->set($this->namespace, $attributes);
+    	} else {
+	        $this->storage->getBag($this->attributeName)->replace($attributes);
+    	}
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function remove($name)
+    {
+    	if($this->namespace){
+    		$name = $this->namespace."/".$name;
+    	}
+
+        return $this->storage->getBag($this->attributeName)->remove($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clear()
+    {
+    	if($this->namespace){
+			$this->replace([]);    		
+    	} else {
+	        $this->storage->getBag($this->attributeName)->clear();
+    	}
+
+    }
 
 	/**
 	 * Gets a stored value as ArrayObject instance
