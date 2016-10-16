@@ -98,13 +98,59 @@ $arrayObject->exchangeArray([]);
 
 ## Working with Fixed Namespace
 
-The idea is to set a namespace once in an instance object and then all following calls to get and set methods in that object will be relative to that namespace. However I have not finished implementing this feature yet. Coming up soon :)
+The idea is to set a namespace once in a session instance and then all following calls to get and set methods in that object will be relative to the set namespace. This is better explained with a real world example:
 
 
+```
+<?php
 
+require_once(__DIR__.'/vendor/autoload.php');
 
+$session = new Obstart\EnhancedSymfonySession\Session();
 
+// Enter Namespace
+$session->setNamespace('submodule');
 
+// Work inside namespace
+$session->set('user_id', 5);
+$session->set('user_name', 'fabio');
 
+echo $session->get('user_id'); // 5
+var_dump($session->has('user_name')); // true
 
+$logs = $session->getArray('logs');
+$logs[] = "Logged-in";
+$logs[] = "Deleted whole database!!";
 
+// Leave Namespace
+$session->setNamespace('');
+
+print_r($session->all());
+/*
+Array
+(
+    [submodule] => Array
+        (
+            [user_id] => 5
+            [user_name] => fabio
+            [logs] => ArrayObject Object
+                (
+                    [storage:ArrayObject:private] => Array
+                        (
+                            [0] => Logged-in
+                            [1] => Deleted whole database!!
+                        )
+
+                )
+
+        )
+
+)
+*/
+
+echo $session->get('submodule/user_name'); // fabio
+```
+
+# Pull Requests are Welcome!
+
+Feel free to propose any changes or add new features by forking this project and sending a pull request.
